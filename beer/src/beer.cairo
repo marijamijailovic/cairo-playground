@@ -8,7 +8,6 @@ trait IVerifier<TContractState> {
 #[starknet::interface]
 trait IBeerToken<TContractState> {
   fn send_token(ref self: TContractState, to: ContractAddress);
-  fn total_supply(ref self: TContractState) -> u128;
 }
 
 #[starknet::interface]
@@ -63,19 +62,14 @@ mod Beer {
   #[abi(embed_v0)]
   impl IBeerImpl of super::IBeer<ContractState> {
     fn get_beer(ref self: ContractState, age_proof: AgeProof) {
-      let verified = IVerifierDispatcher {contract_address: self.verifier.read() }.verify(age_proof.proof);
-      assert(verified,  Errors::NOT_VALID_PROOF);
+      let age_verified = IVerifierDispatcher {contract_address: self.verifier.read() }.verify(age_proof.proof);
+      assert(age_verified,  Errors::NOT_VALID_PROOF);
 
       let age = extract_age(age_proof);
       assert(age > 18, Errors::TOO_YUNG);
 
-      let beer_token_dispathcer = IBeerTokenDispatcher {contract_address: self.beer_token.read()};
-
-      let beer_token_total_supply = beer_token_dispathcer.total_supply();
-      assert(beer_token_total_supply <= 10 * 1000000000000000000, Errors::NO_MORE_BEER);
-
       let caller: ContractAddress = get_caller_address();
-      beer_token_dispathcer.send_token(caller);
+      IBeerTokenDispatcher {contract_address: self.beer_token.read()}.send_token(caller);
       self.emit(FreeBeer {winner: caller} );
     }
   }

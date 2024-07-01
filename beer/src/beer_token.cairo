@@ -1,6 +1,7 @@
 #[starknet::contract]
 mod BeerToken {
     use openzeppelin::token::erc20::{ERC20Component, ERC20HooksEmptyImpl};
+    use beer::errors::Errors;
     use starknet::ContractAddress;
 
     component!(path: ERC20Component, storage: erc20, event: ERC20Event);
@@ -31,7 +32,8 @@ mod BeerToken {
     }
 
     #[external(v0)]
-    fn send_token(ref self: ContractState, recipient: ContractAddress) { 
+    fn send_token(ref self: ContractState, recipient: ContractAddress) {
+        assert(self.erc20.total_supply() <= 10 * 1000000000000000000, Errors::NO_MORE_BEER);
         self.erc20.mint(recipient, 1000000000000000000);
     }
 }
