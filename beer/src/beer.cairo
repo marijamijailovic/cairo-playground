@@ -63,10 +63,10 @@ mod Beer {
   impl IBeerImpl of super::IBeer<ContractState> {
     fn get_beer(ref self: ContractState, age_proof: AgeProof) {
       let age_verified = IVerifierDispatcher {contract_address: self.verifier.read() }.verify(age_proof.proof);
-      assert(age_verified,  Errors::NOT_VALID_PROOF);
+      assert(age_verified, Errors::NOT_VALID);
 
       let age = extract_age(age_proof);
-      assert(age > 18, Errors::TOO_YUNG);
+      assert(age > 18, Errors::NOT_VALID);
 
       let caller: ContractAddress = get_caller_address();
       IBeerTokenDispatcher {contract_address: self.beer_token.read()}.send_token(caller);

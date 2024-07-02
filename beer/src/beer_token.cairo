@@ -33,7 +33,7 @@ mod BeerToken {
 
     #[external(v0)]
     fn send_token(ref self: ContractState, recipient: ContractAddress) {
-        assert(self.erc20.total_supply() <= 10 * 1000000000000000000, Errors::NO_MORE_BEER);
+        assert(self.erc20.total_supply() <= 10 * 1000000000000000000, Errors::NOT_VALID);
         self.erc20.mint(recipient, 1000000000000000000);
     }
 }
