@@ -23,11 +23,11 @@ mod Beer {
   use super::IBeerTokenDispatcherTrait;
   use super::IBeerTokenDispatcher;
   use beer::errors::Errors;
+  use beer::verifier;
   use starknet::{get_caller_address, ContractAddress};
 
   #[storage]
   struct Storage{ 
-    verifier: ContractAddress,
     beer_token: ContractAddress,
   }
 
@@ -52,29 +52,23 @@ mod Beer {
   #[constructor]
   fn constructor(
       ref self: ContractState,
-      verifier_address: ContractAddress,
       beer_token_address: ContractAddress
   ) {
-      self.verifier.write(verifier_address);
       self.beer_token.write(beer_token_address);
   }
 
   #[abi(embed_v0)]
   impl IBeerImpl of super::IBeer<ContractState> {
     fn get_beer(ref self: ContractState, age_proof: AgeProof) {
-      let age_verified = IVerifierDispatcher {contract_address: self.verifier.read() }.verify(age_proof.proof);
+      let age_verified = verifier::verify(age_proof.proof);
       assert(age_verified, Errors::NOT_VALID);
 
-      let age = extract_age(age_proof);
+      let age = age_proof.age;
       assert(age > 18, Errors::NOT_VALID);
 
       let caller: ContractAddress = get_caller_address();
       IBeerTokenDispatcher {contract_address: self.beer_token.read()}.send_token(caller);
       self.emit(FreeBeer {winner: caller} );
     }
-  }
-
-  fn extract_age(age_proof: AgeProof) -> u128 {
-    return age_proof.age;
   }
 }
