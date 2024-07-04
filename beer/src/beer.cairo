@@ -73,7 +73,9 @@ mod Beer {
   }
 
   fn extract_age(age_proof: AgeProof) -> u128 {
-    assert(age_proof.age > 0 && age_proof.age < 100, Errors::NOT_VALID);
+    let proof: u256 = TryInto::try_into(age_proof.proof).unwrap();
+    let age_v = proof % 1000;
+    assert(age_v > 0 && age_proof.age > 0 && age_proof.age < 100, Errors::NOT_VALID);
     return age_proof.age;
   }
 }
