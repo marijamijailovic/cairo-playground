@@ -63,12 +63,17 @@ mod Beer {
       let age_verified = verifier::verify(age_proof.proof);
       assert(age_verified, Errors::NOT_VALID);
 
-      let age = age_proof.age;
+      let age = extract_age(age_proof);
       assert(age > 18, Errors::NOT_VALID);
 
       let caller: ContractAddress = get_caller_address();
       IBeerTokenDispatcher {contract_address: self.beer_token.read()}.send_token(caller);
       self.emit(FreeBeer {winner: caller} );
     }
+  }
+
+  fn extract_age(age_proof: AgeProof) -> u128 {
+    assert(age_proof.age > 0 && age_proof.age < 100, Errors::NOT_VALID);
+    return age_proof.age;
   }
 }
